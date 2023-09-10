@@ -23,18 +23,16 @@ int parse_map(t_mlx *mlx)
         i++;
     }
 
-    mlx->map_hight = i*upscale_map;
-    mlx->map_width = j*upscale_map;
+    mlx->map_hight = (i-1)*upscale_map;
+    mlx->map_width = (j-1)*upscale_map;
     return (0);
 }
 int main(int ac, char **av)
 {
     t_mlx mlx;
 
-    if (ac < 2)
-        return 0;
-    mlx.x = 0;
-    mlx.y = 0;
+    if (ac != 2)
+        return 1;
     mlx.map = open_map(av[1]);
     parse_map(&mlx);
     mlx.mlx = mlx_init(1920, 1080, "MLX42", false);
@@ -42,11 +40,11 @@ int main(int ac, char **av)
     mlx.minimap_img = mlx_new_image(mlx.mlx, mini_map_w, mini_map_h);
     mlx_image_to_window(mlx.mlx, mlx.img, 0, 0);
     mlx_image_to_window(mlx.mlx, mlx.minimap_img, 0, 0);
-    mlx.tile = mlx_load_png("image/tile.png");
+    mlx.tile = mlx_load_png("image/eagle.png");
     if(!mlx.tile)
         exit(0);
     mlx.start = 1;
-    mlx_key_hook(mlx.mlx, event_win, &mlx);
+    mlx_loop_hook(mlx.mlx, event_win, &mlx);
     mlx_loop_hook(mlx.mlx, drow_player, &mlx);
     mlx_loop(mlx.mlx);
     mlx_terminate(mlx.mlx);

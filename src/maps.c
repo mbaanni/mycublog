@@ -3,8 +3,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-
-
+#include <stdlib.h>
 
 void    put_pixel(int color, t_mlx *mlx, int x, int y)
 {
@@ -138,7 +137,7 @@ void	small_dist(t_ray *ray, t_mlx *mlx, float *distray)
         ray->rx = ray->vx;
         ray->ry = ray->vy;
         *distray = sqrt(v_dist_sqr);
-        ray->offset = ray->vx;
+        mlx->offset = ray->vy;
         ray->side = RIGHT;
         if (ray->vxblock > 0)
             ray->side = LEFT;
@@ -147,7 +146,7 @@ void	small_dist(t_ray *ray, t_mlx *mlx, float *distray)
         ray->rx = ray->hx;
         ray->ry = ray->hy;
         *distray = sqrt(h_dist_sqr);
-        ray->offset = ray->vy;
+        mlx->offset = ray->hx;
         ray->side = TOP;
         if (ray->hyblock < 0)
             ray->side = BOTTOM;
@@ -214,74 +213,36 @@ void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray)
     }
 }
 
-void draw_limage(t_mlx *mlx, int x_start, int y_start, int x_end, int y_end)
+uint32_t get_color(t_mlx *mlx,float y, float x)
 {
-    int x0 = map_w/2;
-    int i;
-    int pos = (mlx->ray->offset/mlx->tile->width)*mlx->tile->bytes_per_pixel;
-    uint32_t color;
-    int y = 0;
-    int x = pos;
-    int off;
-    float ty = 0;
-    float ty_step = 64.0/x_end;
-    while (y_start < y_end)
-    {
-        i = 0;
-        //color = ;
-        // off = 24;
-        // while (i < mlx->tile->bytes_per_pixel)
-        // {
-        //     color = color | mlx->tile->pixels[x] << off;
-        //     x++;
-        //     off -=8;
-        //     i++;
-        // }
-        mlx_put_pixel(mlx->img, x_start, y_start, 0xFF0000ff);
-        y_start++;
-        y++;
-        x += mlx->tile->width*mlx->tile->bytes_per_pixel;
-        ty+=ty_step;
-    }
+	int pos = (y * mlx->tile->width + x) * mlx->tile->bytes_per_pixel;
+	if (pos < 0 || pos > (mlx->tile->height * (mlx->tile->width*4)) - 4)
+        return 0;
+	return (mlx->tile->pixels[pos]<<24 | mlx->tile->pixels[pos+1]<<16 | mlx->tile->pixels[pos+2]<<8 | mlx->tile->pixels[pos+3]);
 }
-
-uint32_t get_color(t_mlx *mlx,int y)
-{
-    return (mlx->tile->pixels[y]<<24 | mlx->tile->pixels[y+1]<<16 | mlx->tile->pixels[y+2]<<8 | mlx->tile->pixels[y+3]);
-}
-void    draw_wall(t_mlx *mlx, t_ray ray, int r, float distray, float angle_step)
+void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step)
 {
     float wall_strip_hight;
     if (distray < 4)
         distray = 4;
-    //distray = cos(30*PI/180-(r*angle_step))*distray;
-    wall_strip_hight = (64*map_h)/distray;
-    wall_strip_hight = (64/distray)*(((float)map_w/2)/(tan(30*PI/180)));
-    if (wall_strip_hight > map_h)
-        wall_strip_hight = map_h;
-    int wall_start = (float)map_h/2 - (wall_strip_hight/2);
-    // int a = (wall_strip_hight/map_h)*255;
-    // color = color | a;
-    float ty_step=64.0/wall_strip_hight;
-    float ty_off=0;
-    if (wall_strip_hight > map_h)
-    {
-        ty_off = (wall_strip_hight-map_h)/2;
-        wall_strip_hight = map_h;
+    // //fish eyes
+    distray = cos(30*PI/180-(r*angle_step))*distray;
+    wall_strip_hight = ((float)64/distray)*(((float)map_h/2)/(tan(30*PI/180)));
+    float	wall_start = map_h/2 - (wall_strip_hight/2);
+	float	wall_end = wall_strip_hight + wall_start;
+	if (wall_start < 0)
+		wall_start = 0;
+	uint32_t color;
+	int texter_y;
+	int texter_x = fmod(mlx->offset, upscale_map) * ((float)mlx->tile->width / upscale_map);
+	float y = wall_start;
+	while (y < wall_end && y < map_h)
+	{
+		texter_y = ((wall_end - y)/wall_strip_hight)*mlx->tile->width;
+		color = get_color(mlx,texter_y, texter_x);
+		mlx_put_pixel(mlx->img, r, y, color);
+		y++;
     }
-    int lineoff = (float)map_h/2 - (wall_strip_hight/2); 
-    int y = 0;
-    uint32_t color;
-    float ty=ty_off*ty_step;
-    float tx = mlx->rx/2%64;
-    while (y < wall_strip_hight)
-    {
-        color = 0xff0000ff;//get_color(mlx, (int)ty*64+(int)tx);
-        mlx_put_pixel(mlx->img, r, y+lineoff, color);
-        y++;
-        ty+=ty_step;
-    }
-
 }
 
 void draw_ray(t_mlx *mlx)
@@ -293,7 +254,7 @@ void draw_ray(t_mlx *mlx)
     float	distray;
 
     r = -1;
-    ra = mlx->angle - (float)field_of_view / 2 * (PI/180);
+    ra = mlx->angle - ((float)field_of_view / 2) * (PI/180);
     angle_step = (field_of_view * (PI/180)) / map_w;
     while(++r < map_w)
     {
@@ -302,7 +263,7 @@ void draw_ray(t_mlx *mlx)
 		calculate_vertical(ra, mlx, &ray);
 		small_dist(&ray, mlx, &distray);
 		draw_line(mlx->minimap_img, (mlx->movex)*map_size, (mlx->movey)*map_size, (ray.rx)*map_size, (ray.ry)*map_size,0x00FF00FF);
-		draw_wall(mlx, ray, r, distray, angle_step);
+		draw_wall(mlx, &ray, r, distray, angle_step);
 		ra += angle_step;
     }
 }

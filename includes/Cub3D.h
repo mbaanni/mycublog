@@ -18,7 +18,7 @@
 #define upscale_player 12
 #define map_size 0.2
 #define speed 0.05
-#define PLAYER_SPEED 5
+#define PLAYER_SPEED 8
 #define field_of_view 60
 
 enum
@@ -41,7 +41,6 @@ typedef struct t_ray {
     float   hyblock;
     float   vxblock;
     float   vyblock;
-    float   offset;
 }t_ray;
 
 typedef struct t_mlx {
@@ -49,12 +48,13 @@ typedef struct t_mlx {
     mlx_image_t *minimap_img;
     mlx_texture_t* tile;
     t_ray   *ray;
-    mlx_t* mlx;
-    void *mlx_win;
-    void *xpm;
+    mlx_t*  mlx;
+    void    *mlx_win;
+    void    *xpm;
     int x;
     int start;
     int y;
+    int offset;
     int map_hight;
     int map_width;
     float angle;
@@ -66,7 +66,7 @@ typedef struct t_mlx {
     char **map;
 }   t_mlx;
 
-void event_win(mlx_key_data_t key, void *param);
+void event_win(void *param);
 char **open_map(char *link);
 int    creat_block(t_mlx *mlx);
 int drow_map(t_mlx *mlx);
