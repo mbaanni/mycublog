@@ -1,9 +1,4 @@
 # include "../includes/Cub3D.h"
-#include <_types/_uint32_t.h>
-#include <math.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 void    put_pixel(int color, t_mlx *mlx, int x, int y)
 {
@@ -28,18 +23,19 @@ int drow_map(t_mlx *mlx)
     int i;
     int j;
     i = 0;
-    while (mlx->map[i])
+    j = 0;
+    while (mlx->map[i][j] && mlx->map[i][j] != '\n')
     {
-        j = 0;
-        while (mlx->map[i][j] && mlx->map[i][j] != '\n')
-        {
-            if (mlx->map[i][j] == '1')
-                put_pixel(0xffffffff, mlx, j*upscale_map, i*upscale_map);
-            if (mlx->map[i][j] == '0')
-                put_pixel(0x000000ff, mlx, j*upscale_map, i*upscale_map);
-            j++;
-        }
-        i++;
+        if (mlx->map[i][j] == '1')
+            put_pixel(0xffffffff, mlx, j*upscale_map, i*upscale_map);
+        if (mlx->map[i][j] == '0')
+            put_pixel(0x000000ff, mlx, j*upscale_map, i*upscale_map);
+        j++;
+		if ((!mlx->map[i][j] || mlx->map[i][j] == '\n') && mlx->map[i+1])
+		{
+			i++;
+			j = 0;
+		}
     }
     return (0);
 }
@@ -125,100 +121,12 @@ float   bound_angle(float angle)
     return (angle);
 }
 
-void	small_dist(t_ray *ray, t_mlx *mlx, float *distray)
-{
-    double  v_dist_sqr;
-    double  h_dist_sqr;
-    double block = 64;
-    v_dist_sqr = ((ray->vx - mlx->movex) * (ray->vx - mlx->movex)) + ((ray->vy - mlx->movey) * (ray->vy - mlx->movey));
-	h_dist_sqr = ((ray->hx - mlx->movex) * (ray->hx - mlx->movex)) + ((ray->hy - mlx->movey) * (ray->hy - mlx->movey));
-    if (h_dist_sqr > v_dist_sqr)
-    {
-        ray->rx = ray->vx;
-        ray->ry = ray->vy;
-        *distray = sqrt(v_dist_sqr);
-        mlx->offset = ray->vy;
-        ray->side = RIGHT;
-        if (ray->vxblock > 0)
-            ray->side = LEFT;
-    }
-    else {
-        ray->rx = ray->hx;
-        ray->ry = ray->hy;
-        *distray = sqrt(h_dist_sqr);
-        mlx->offset = ray->hx;
-        ray->side = TOP;
-        if (ray->hyblock < 0)
-            ray->side = BOTTOM;
-    }
-}
-
-void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray)
-{
-    float   atan;
-
-    atan = -tan(ra);
-    if (ra > PI)
-    {
-        ray->hy = ((mlx->movey / 64 ) * 64 ) - 0.0001;
-        ray->hx = mlx->movex + (mlx->movey - ray->hy)/atan;
-        ray->hyblock = -64;
-        ray->hxblock = -ray->hyblock/atan;
-    }
-    if(ra < PI)
-    {
-        ray->hy = ((mlx->movey / 64) * 64) + 64;
-        ray->hx = mlx->movex + (mlx->movey - ray->hy)/atan;
-        ray->hyblock = 64;
-        ray->hxblock = -ray->hyblock/atan;
-    }
-    //next x
-    while(ray->hy < mlx->map_hight && ray->hy > 0)
-    {
-        if (ray->hx > mlx->map_width || ray->hx < 0)
-            break ;
-        else if (mlx->map[(int)ray->hy/64][(int)ray->hx/64] == '1')
-            break ;
-        ray->hx = ray->hx + ray->hxblock;
-        ray->hy = ray->hy + ray->hyblock;
-    }
-}
-
-void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray)
-{
-    float   atan;
-    atan = -tan(ra);
-    if (ra > (3*PI)/2 ||  ra < PI/2)
-    {
-        ray->vx = (( mlx->movex / 64 ) * 64 ) + 64;
-        ray->vy = mlx->movey + (mlx->movex - ray->vx) * atan;
-        ray->vxblock = 64;
-        ray->vyblock = -ray->vxblock*atan;
-    }
-    if (ra > (PI/2) && ra < (3*PI/2))
-    {
-        ray->vx = ((mlx->movex / 64 ) * 64 ) - 0.0001;
-        ray->vy = mlx->movey + (mlx->movex - ray->vx) * atan;
-        ray->vxblock = -64;
-        ray->vyblock = -ray->vxblock*atan;
-    }
-    while (ray->vx < mlx->map_width && ray->vx > 0)
-    {
-        if (ray->vy > mlx->map_hight || ray->vy < 0)
-            break ;
-        else if (mlx->map[(int)ray->vy/64][(int)ray->vx/64] == '1')
-            break ;
-        ray->vx = ray->vx + ray->vxblock;
-        ray->vy = ray->vy + ray->vyblock;
-    }
-}
-
 uint32_t get_color(t_mlx *mlx,float y, float x)
 {
-	int pos = (y * mlx->tile->width + x) * mlx->tile->bytes_per_pixel;
-	if (pos < 0 || pos > (mlx->tile->height * (mlx->tile->width*4)) - 4)
+	int pos = (y * mlx->tile[mlx->side]->width + x) * mlx->tile[mlx->side]->bytes_per_pixel;
+	if (pos < 0 || pos > (mlx->tile[mlx->side]->height * (mlx->tile[mlx->side]->width*4)) - 4)
         return 0;
-	return (mlx->tile->pixels[pos]<<24 | mlx->tile->pixels[pos+1]<<16 | mlx->tile->pixels[pos+2]<<8 | mlx->tile->pixels[pos+3]);
+	return (mlx->tile[mlx->side]->pixels[pos]<<24 | mlx->tile[mlx->side]->pixels[pos+1]<<16 | mlx->tile[mlx->side]->pixels[pos+2]<<8 | mlx->tile[mlx->side]->pixels[pos+3]);
 }
 void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step)
 {
@@ -234,14 +142,14 @@ void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step
 		wall_start = 0;
 	uint32_t color;
 	int texter_y;
-	int texter_x = fmod(mlx->offset, upscale_map) * ((float)mlx->tile->width / upscale_map);
+	int texter_x = fmod(mlx->offset, upscale_map) * ((float)mlx->tile[mlx->side]->width / upscale_map);
 	float y = wall_start;
-	while (y < wall_end && y < map_h)
+	while (wall_start < wall_end && wall_start < map_h)
 	{
-		texter_y = ((wall_end - y)/wall_strip_hight)*mlx->tile->width;
+		texter_y = (1.0-(wall_end - wall_start)/wall_strip_hight)*mlx->tile[mlx->side]->width;
 		color = get_color(mlx,texter_y, texter_x);
-		mlx_put_pixel(mlx->img, r, y, color);
-		y++;
+		mlx_put_pixel(mlx->img, r, wall_start, color);
+		wall_start++;
     }
 }
 
@@ -268,50 +176,31 @@ void draw_ray(t_mlx *mlx)
     }
 }
 
+void    ffps(void *ptr, mlx_image_t *txt)
+{
+    mlx_t *mlx = (mlx_t*)ptr;
+    mlx_put_pixel(txt, 0, 0, 0xff0000ff);
+}
+
 void    drow_player(void *ptr)
 {
-    t_mlx *mlx;
-    mlx = (t_mlx*)ptr;
-    if (mlx->start)
+	t_mlx *mlx;
+    int fps;
+	mlx = (t_mlx*)ptr;
+	if (mlx->start)
     {
-        //clean_it(mlx);// remove this function
-        drow_map(mlx);
-        draw_ceiling_floor(mlx);
-	    draw_ray(mlx);
-        mlx->start = 0;
-    }
-}
-
-char **read_it(int fd)
-{
-    char	*line;
-	char	*str;
-	char	**map;
-
-	str = 0;
-    map = 0;
-	while (1)
-	{
-		line = get_next_line(fd);
-		if (!line)
-			break ;
-		str = ft_strjoin(str, line);
-		str = ft_strjoin(str, " ");
-		free(line);
+        fps = mlx->mlx->delta_time*1000;
+        if (mlx->txt)
+        {
+            mlx_delete_image(mlx->mlx, mlx->txt);
+            mlx->txt = 0;
+        }
+        mlx->txt = mlx_put_string(mlx->mlx, ft_itoa(fps),map_w/2,0);
+        if (mlx->txt)
+            ffps(mlx->mlx,mlx->txt);
+		drow_map(mlx);
+		draw_ceiling_floor(mlx);
+		draw_ray(mlx);
+		mlx->start = 0;
 	}
-	map = ft_split(str, ' ');
-	free(str);
-	close(fd);
-	if (!map)
-		write(1, "not allocated\n", 14);
-	return (map);
-}
-
-char **open_map(char *link)
-{
-    int fd;
-    fd = open(link, O_RDONLY);
-    if (fd < 0)
-        return (0);
-    return (read_it(fd));
 }

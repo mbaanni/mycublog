@@ -1,32 +1,23 @@
 # include "../includes/Cub3D.h"
 #include <stdbool.h>
 
-int parse_map(t_mlx *mlx)
-{
-    int i;
-    int j;
-    i = 0;
-    while (mlx->map[i])
-    {
-        j = 0;
-        while (mlx->map[i][j])
-        {
-            if (mlx->map[i][j] == 'P')
-            {
-                mlx->map[i][j] = '0';
-                mlx->movex = (j * upscale_map);
-                mlx->movey = (i * upscale_map);
-                mlx->angle = PI/2;
-            }
-            j++;
-        }
-        i++;
-    }
 
-    mlx->map_hight = (i-1)*upscale_map;
-    mlx->map_width = (j-1)*upscale_map;
-    return (0);
+int	load_image(t_mlx *mlx)
+{
+    mlx->tile[0] = mlx_load_png("image/eagle.png");
+    mlx->tile[1] = mlx_load_png("image/greystone.png");
+    mlx->tile[2] = mlx_load_png("image/redbrick.png");
+    mlx->tile[3] = mlx_load_png("image/bluestone.png");
+	int i = -1;
+	while (++i < 4)
+	{
+		if (!mlx->tile[i])
+			return (1);
+	}
+	return (0);
 }
+
+
 int main(int ac, char **av)
 {
     t_mlx mlx;
@@ -35,15 +26,15 @@ int main(int ac, char **av)
         return 1;
     mlx.map = open_map(av[1]);
     parse_map(&mlx);
+    if(load_image(&mlx))
+		exit(1);//distroy image
     mlx.mlx = mlx_init(1920, 1080, "MLX42", false);
     mlx.img = mlx_new_image(mlx.mlx, map_w, map_h);
     mlx.minimap_img = mlx_new_image(mlx.mlx, mini_map_w, mini_map_h);
     mlx_image_to_window(mlx.mlx, mlx.img, 0, 0);
     mlx_image_to_window(mlx.mlx, mlx.minimap_img, 0, 0);
-    mlx.tile = mlx_load_png("image/eagle.png");
-    if(!mlx.tile)
-        exit(0);
     mlx.start = 1;
+    mlx.txt = 0;
     mlx_loop_hook(mlx.mlx, event_win, &mlx);
     mlx_loop_hook(mlx.mlx, drow_player, &mlx);
     mlx_loop(mlx.mlx);

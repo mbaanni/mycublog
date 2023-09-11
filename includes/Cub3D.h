@@ -2,12 +2,11 @@
 #define CUB3D_H
 
 #include "../42mx/include/MLX42/MLX42.h"
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 #include "../libft/libft.h"
 #include "../libft/get_next_line.h"
+#include <fcntl.h>
+#include <stdio.h> //remove this library
+#include <math.h>
 
 #define PI M_PI
 #define map_w 1920
@@ -18,8 +17,15 @@
 #define upscale_player 12
 #define map_size 0.2
 #define speed 0.05
-#define PLAYER_SPEED 8
+#define PLAYER_SPEED 5
 #define field_of_view 60
+
+enum prespective {
+    NO,
+    SO,
+    WE,
+    EA
+};
 
 enum
 {
@@ -30,7 +36,6 @@ enum
 };
 
 typedef struct t_ray {
-    int     side;
     float   hx;
     float   hy;
     float   rx;
@@ -46,9 +51,11 @@ typedef struct t_ray {
 typedef struct t_mlx {
     mlx_image_t *img;
     mlx_image_t *minimap_img;
-    mlx_texture_t* tile;
+    mlx_texture_t* tile[5];
     t_ray   *ray;
     mlx_t*  mlx;
+    mlx_image_t *txt;
+    int     side;
     void    *mlx_win;
     void    *xpm;
     int x;
@@ -66,18 +73,16 @@ typedef struct t_mlx {
     char **map;
 }   t_mlx;
 
-void event_win(void *param);
-char **open_map(char *link);
-int    creat_block(t_mlx *mlx);
-int drow_map(t_mlx *mlx);
-void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy, int color);
-void    drow_player(void *mlx);
+int     drow_map(t_mlx *mlx);
 void    clean_it(t_mlx *mlx);
+int     parse_map(t_mlx *mlx);
+void    drow_player(void *mlx);
+void    event_win(void *param);
+char    **open_map(char *link);
+int     creat_block(t_mlx *mlx);
+void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy, int color);
+void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray);
+void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray);
+void	small_dist(t_ray *ray, t_mlx *mlx, float *distray);
 
-enum prespective {
-    NO,
-    SO,
-    WE,
-    EA
-};
 #endif
