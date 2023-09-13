@@ -1,4 +1,5 @@
 # include "../includes/Cub3D.h"
+#include <_types/_uint32_t.h>
 
 void    put_pixel(int color, t_mlx *mlx, int x, int y)
 {
@@ -96,22 +97,6 @@ float dist(float px, float py, float rx, float ry)
     return res;
 }
 
-void    draw_ceiling_floor(t_mlx *mlx)
-{
-    int color;
-    int x,y;
-    y = -1;
-    color = 0x45b3e0ff;
-    while (++y < map_h)
-    {
-        if (y > map_h/2)
-            color = 0xffffff00;
-        x = -1;
-        while (++x < map_w)
-            mlx_put_pixel(mlx->img, x, y, color);
-    }
-}
-
 float   bound_angle(float angle)
 {
     if (angle < 0)
@@ -121,36 +106,57 @@ float   bound_angle(float angle)
     return (angle);
 }
 
-uint32_t get_color(t_mlx *mlx,float y, float x)
+uint32_t get_color(t_mlx *mlx,int y, int x)
 {
 	int pos = (y * mlx->tile[mlx->side]->width + x) * mlx->tile[mlx->side]->bytes_per_pixel;
 	if (pos < 0 || pos > (mlx->tile[mlx->side]->height * (mlx->tile[mlx->side]->width*4)) - 4)
         return 0;
 	return (mlx->tile[mlx->side]->pixels[pos]<<24 | mlx->tile[mlx->side]->pixels[pos+1]<<16 | mlx->tile[mlx->side]->pixels[pos+2]<<8 | mlx->tile[mlx->side]->pixels[pos+3]);
 }
+
+void    draw_block(mlx_image_t *img, int start, int end, int ray, uint32_t color)
+{
+
+    while (start < end)
+    {
+		mlx_put_pixel(img, ray, start, color);
+        start++;
+    }
+}
 void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step)
 {
     float wall_strip_hight;
+	uint32_t color;
     if (distray < 4)
         distray = 4;
     // //fish eyes
     distray = cos(30*PI/180-(r*angle_step))*distray;
-    wall_strip_hight = ((float)64/distray)*(((float)map_h/2)/(tan(30*PI/180)));
+    wall_strip_hight = (64/distray)*(((float)map_h/2)/(tan(30*PI/180)));
+    wall_strip_hight = 64/distray * (map_w/2);
     float	wall_start = map_h/2 - (wall_strip_hight/2);
-	float	wall_end = wall_strip_hight + wall_start;
+	float	wall_end = map_h/2 + wall_strip_hight/2;
 	if (wall_start < 0)
 		wall_start = 0;
-	uint32_t color;
 	int texter_y;
-	int texter_x = fmod(mlx->offset, upscale_map) * ((float)mlx->tile[mlx->side]->width / upscale_map);
-	float y = wall_start;
+	int texter_x = mlx->offset * (mlx->tile[mlx->side]->width / upscale_map);
+    draw_block(mlx->img, 0, wall_start, r, 0x45b3e0ff);
 	while (wall_start < wall_end && wall_start < map_h)
 	{
-		texter_y = (1.0-(wall_end - wall_start)/wall_strip_hight)*mlx->tile[mlx->side]->width;
+		texter_y = (1.0-(wall_end - wall_start)/wall_strip_hight)*(mlx->tile[mlx->side]->width);
 		color = get_color(mlx,texter_y, texter_x);
 		mlx_put_pixel(mlx->img, r, wall_start, color);
 		wall_start++;
     }
+    // int tx,ty;
+    // tx = mlx->offset;
+    // int i = 0;
+    // color = 0xff0000ff;
+    // while(wall_start < wall_end && wall_start < map_h)
+    // {
+	//     mlx_put_pixel(mlx->img, r, wall_start, color);
+    //     wall_start++;
+    // }
+    draw_block(mlx->img, wall_start, map_h, r, 0xffffff00);
 }
 
 void draw_ray(t_mlx *mlx)
@@ -199,7 +205,7 @@ void    drow_player(void *ptr)
         if (mlx->txt)
             ffps(mlx->mlx,mlx->txt);
 		drow_map(mlx);
-		draw_ceiling_floor(mlx);
+		//draw_ceiling_floor(mlx);
 		draw_ray(mlx);
 		mlx->start = 0;
 	}

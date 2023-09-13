@@ -1,6 +1,7 @@
 
+OS = $(shell uname)
 LIBMLX = ./42mx
-ifeq ($(UNAME_S),Linux)
+ifeq ($(OS),Linux)
 	LIBS = $(LIBMLX)/build/libmlx42.a -Iinclude -ldl -lglfw -pthread -lm
 else
 	LIBS = $(LIBMLX)/build/libmlx42.a -ldl -lglfw -L"$(HOME)/.brew/Cellar/glfw/3.3.8/lib" -pthread -lm -framework Cocoa -framework OpenGL -framework IOKit

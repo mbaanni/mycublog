@@ -17,7 +17,7 @@
 #define upscale_player 12
 #define map_size 0.2
 #define speed 0.05
-#define PLAYER_SPEED 5
+#define PLAYER_SPEED 15
 #define field_of_view 60
 
 enum prespective {
@@ -61,14 +61,14 @@ typedef struct t_mlx {
     int x;
     int start;
     int y;
-    int offset;
+    float offset;
     int map_hight;
     int map_width;
     float angle;
     int movex;
     int movey;
     int rx;
-    float ry;
+    int ry;
     int color;
     char **map;
 }   t_mlx;
