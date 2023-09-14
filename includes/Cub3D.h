@@ -14,9 +14,8 @@
 #define mini_map_w 1920
 #define mini_map_h 1080
 #define upscale_map 64
-#define upscale_player 12
 #define map_size 0.2
-#define speed 0.05
+#define angle_speed 0.05
 #define PLAYER_SPEED 15
 #define field_of_view 60
 
@@ -58,17 +57,13 @@ typedef struct t_mlx {
     int     side;
     void    *mlx_win;
     void    *xpm;
-    int x;
     int start;
-    int y;
     float offset;
     int map_hight;
     int map_width;
     float angle;
     int movex;
     int movey;
-    int rx;
-    int ry;
     int color;
     char **map;
 }   t_mlx;
@@ -80,6 +75,7 @@ void    drow_player(void *mlx);
 void    event_win(void *param);
 char    **open_map(char *link);
 int     creat_block(t_mlx *mlx);
+int     drow_map(t_mlx *mlx);
 void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy, int color);
 void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray);
 void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray);

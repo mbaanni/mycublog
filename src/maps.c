@@ -1,89 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   maps.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/09/14 13:11:12 by mbaanni           #+#    #+#             */
+/*   Updated: 2023/09/14 13:53:35 by mbaanni          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 # include "../includes/Cub3D.h"
-#include <_types/_uint32_t.h>
-
-void    put_pixel(int color, t_mlx *mlx, int x, int y)
-{
-    int i;
-    int j;
-
-    i = 0;
-    while (i < upscale_map)
-    {
-        j = 0;
-        while (j < upscale_map)
-        {
-			if (j != 0 && i != 0)
-            	mlx_put_pixel(mlx->minimap_img, (x + j)*map_size, (y + i)*map_size, color);
-            j++;
-        }
-        i++;
-    }
-}
-int drow_map(t_mlx *mlx)
-{
-    int i;
-    int j;
-    i = 0;
-    j = 0;
-    while (mlx->map[i][j] && mlx->map[i][j] != '\n')
-    {
-        if (mlx->map[i][j] == '1')
-            put_pixel(0xffffffff, mlx, j*upscale_map, i*upscale_map);
-        if (mlx->map[i][j] == '0')
-            put_pixel(0x000000ff, mlx, j*upscale_map, i*upscale_map);
-        j++;
-		if ((!mlx->map[i][j] || mlx->map[i][j] == '\n') && mlx->map[i+1])
-		{
-			i++;
-			j = 0;
-		}
-    }
-    return (0);
-}
-
-void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy, int color)
-{
-	int	delta_x = endx - startx;
-	int	delta_y = endy - starty;
-    int step_x = 1;
-    int step_y = 1;
-    if (delta_x < 0)
-	{
-		delta_x = -delta_x;
-        step_x = -1;
-	}
-    if (delta_y < 0)
-	{
-		delta_y = -delta_y;
-        step_y = -1;
-	}
-	delta_y*=-1;
-    int error;
-    int error2 = 0;
-    error = delta_y+delta_x;
-    while (1)
-    {
-        if (startx >= 0 && startx < map_w && starty >= 0 && starty < map_h)
-    		mlx_put_pixel(image, startx, starty, color);
-		if (startx == endx && starty == endy)
-			break;
-		error2 = error*2;
-		if (error2 >= delta_y)
-		{
-			if (startx == endx)
-				break;
-			error+=delta_y;
-			startx+=step_x;
-		}
-		if (error2 <= delta_x)
-		{
-			if (starty == endy)
-				break;
-			error+=delta_x;
-			starty+=step_y;
-		}
-	}
-}
 
 float dist(float px, float py, float rx, float ry)
 {
@@ -147,15 +74,6 @@ void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step
 		mlx_put_pixel(mlx->img, r, wall_start, color);
 		wall_start++;
     }
-    // int tx,ty;
-    // tx = mlx->offset;
-    // int i = 0;
-    // color = 0xff0000ff;
-    // while(wall_start < wall_end && wall_start < map_h)
-    // {
-	//     mlx_put_pixel(mlx->img, r, wall_start, color);
-    //     wall_start++;
-    // }
     draw_block(mlx->img, wall_start, map_h, r, 0xffffff00);
 }
 
@@ -190,12 +108,13 @@ void    ffps(void *ptr, mlx_image_t *txt)
 
 void    drow_player(void *ptr)
 {
-	t_mlx *mlx;
-    int fps;
+	t_mlx   *mlx;
+    int     fps;
+
 	mlx = (t_mlx*)ptr;
 	if (mlx->start)
     {
-        fps = mlx->mlx->delta_time*1000;
+        fps = mlx->mlx->delta_time * 1000;
         if (mlx->txt)
         {
             mlx_delete_image(mlx->mlx, mlx->txt);
@@ -205,7 +124,6 @@ void    drow_player(void *ptr)
         if (mlx->txt)
             ffps(mlx->mlx,mlx->txt);
 		drow_map(mlx);
-		//draw_ceiling_floor(mlx);
 		draw_ray(mlx);
 		mlx->start = 0;
 	}

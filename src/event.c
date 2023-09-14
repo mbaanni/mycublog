@@ -6,7 +6,7 @@
 /*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/03 10:00:26 by mbaanni           #+#    #+#             */
-/*   Updated: 2023/09/13 15:16:45 by mbaanni          ###   ########.fr       */
+/*   Updated: 2023/09/14 19:32:01 by mbaanni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 void    check_next_xy(t_mlx *mlx, int x, int y)
 {
-    int offsetx = 10;
-    int offsety = 10;
+    int offsetx = 15;
+    int offsety = 15;
     if (x < 0)
-        offsetx = -10;
+        offsetx = -offsetx;
     if (y < 0)
-        offsety = -10;
+        offsety = -offsety;
     if ((mlx->map[(int)((mlx->movey + y + offsety)/upscale_map)][(int)(mlx->movex/upscale_map)]) != '1')
 	{
         mlx->movey += y;
@@ -52,14 +52,14 @@ void	player_angle(t_mlx *mlx)
 {
 	if (mlx_is_key_down(mlx->mlx, MLX_KEY_RIGHT))
     {
-        mlx->angle += speed;
+        mlx->angle += angle_speed;
         if (mlx->angle >= 2*PI)
             mlx->angle -= 2*PI;
 	    mlx->start = 1;
     }
     else if (mlx_is_key_down(mlx->mlx, MLX_KEY_LEFT))
     {
-        mlx->angle -= speed;
+        mlx->angle -= angle_speed;
         if (mlx->angle < 0)
             mlx->angle += 2*PI;
 	    mlx->start = 1;

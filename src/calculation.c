@@ -6,7 +6,7 @@
 /*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 12:25:22 by mbaanni           #+#    #+#             */
-/*   Updated: 2023/09/13 16:05:02 by mbaanni          ###   ########.fr       */
+/*   Updated: 2023/09/14 19:35:54 by mbaanni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,10 @@ void	small_dist(t_ray *ray, t_mlx *mlx, float *distray)
 void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray)
 {
     float   tang;
-
     tang = -tan(ra);
     if (ra > PI)
     {
-        ray->hy = ((mlx->movey / 64 ) * 64 ) - 0.001;
+        ray->hy = ((mlx->movey / 64 ) * 64 ) - 0.0001;
         ray->hx = mlx->movex + (mlx->movey - ray->hy)/tang;
         ray->hyblock = -64;
         ray->hxblock = -ray->hyblock/tang;
@@ -59,11 +58,11 @@ void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray)
         ray->hxblock = -ray->hyblock/tang;
     }
     //next x
-    while(ray->hy < mlx->map_hight && ray->hy > 0)
+    while(1)
     {
         if (ray->hx > mlx->map_width || ray->hx < 0)
             break ;
-        else if (mlx->map[(int)ray->hy/64][(int)ray->hx/64] == '1')
+        if (mlx->map[(int)ray->hy/64][(int)ray->hx/64] == '1')
             break ;
         ray->hx = ray->hx + ray->hxblock;
         ray->hy = ray->hy + ray->hyblock;
@@ -73,6 +72,7 @@ void    calculate_horizontal(float ra, t_mlx *mlx, t_ray *ray)
 void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray)
 {
     float   tang;
+
     tang = -tan(ra);
     if (ra > (3*PI)/2 ||  ra < PI/2)
     {
@@ -83,7 +83,7 @@ void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray)
     }
     if (ra > (PI/2) && ra < (3*PI/2))
     {
-        ray->vx = ((mlx->movex / 64 ) * 64 ) - 0.001;
+        ray->vx = ((mlx->movex / 64 ) * 64 ) - 0.0001;
         ray->vy = mlx->movey + (mlx->movex - ray->vx) * tang;
         ray->vxblock = -64;
         ray->vyblock = -ray->vxblock*tang;
@@ -92,9 +92,9 @@ void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray)
     {
         if (ray->vy > mlx->map_hight || ray->vy < 0)
             break ;
-        else if (mlx->map[(int)ray->vy/64][(int)ray->vx/64] == '1')
-            break ;
-        ray->vx = ray->vx + ray->vxblock;
-        ray->vy = ray->vy + ray->vyblock;
+        if (mlx->map[(int)ray->vy/64][(int)ray->vx/64] == '1')
+			break ;
+		ray->vx = ray->vx + ray->vxblock;
+		ray->vy = ray->vy + ray->vyblock;
     }
 }

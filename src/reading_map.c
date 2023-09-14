@@ -6,7 +6,7 @@
 /*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 08:01:51 by mbaanni           #+#    #+#             */
-/*   Updated: 2023/09/11 08:03:05 by mbaanni          ###   ########.fr       */
+/*   Updated: 2023/09/14 17:16:19 by mbaanni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@ int parse_map(t_mlx *mlx)
             if (mlx->map[i][j] == 'P')
             {
                 mlx->map[i][j] = '0';
-                mlx->movex = (j * upscale_map);
-                mlx->movey = (i * upscale_map);
+                mlx->movex = (j * upscale_map)+upscale_map/2;
+                mlx->movey = (i * upscale_map)+upscale_map/2;
                 mlx->angle = PI/2;
             }
             j++;
