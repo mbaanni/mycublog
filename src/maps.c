@@ -6,7 +6,7 @@
 /*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 13:11:12 by mbaanni           #+#    #+#             */
-/*   Updated: 2023/09/14 13:53:35 by mbaanni          ###   ########.fr       */
+/*   Updated: 2023/09/22 09:30:51 by mbaanni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,31 +50,31 @@ void    draw_block(mlx_image_t *img, int start, int end, int ray, uint32_t color
         start++;
     }
 }
-void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step)
+void    draw_wall(t_mlx *mlx, t_ray *ray, int r, float distray, float angle_step, float ra)
 {
     float wall_strip_hight;
 	uint32_t color;
-    if (distray < 4)
-        distray = 4;
+    if (distray < 0)
+        distray = 1;
     // //fish eyes
     distray = cos(30*PI/180-(r*angle_step))*distray;
-    wall_strip_hight = (64/distray)*(((float)map_h/2)/(tan(30*PI/180)));
-    wall_strip_hight = 64/distray * (map_w/2);
-    float	wall_start = map_h/2 - (wall_strip_hight/2);
-	float	wall_end = map_h/2 + wall_strip_hight/2;
+    wall_strip_hight = (64/distray)*(((float)HEIGHT/2)/(tan(30*PI/180)));
+    //wall_strip_hight = 64/distray * (WIDTH/2);
+    float	wall_start = HEIGHT / 2 - (wall_strip_hight / 2);
+	float	wall_end = HEIGHT / 2 + wall_strip_hight / 2;
 	if (wall_start < 0)
 		wall_start = 0;
 	int texter_y;
-	int texter_x = mlx->offset * (mlx->tile[mlx->side]->width / upscale_map);
+	int texter_x = mlx->offset * ((int)(mlx->tile[mlx->side]->width / upscale_map));
     draw_block(mlx->img, 0, wall_start, r, 0x45b3e0ff);
-	while (wall_start < wall_end && wall_start < map_h)
+	while (wall_start < wall_end && wall_start < HEIGHT)
 	{
 		texter_y = (1.0-(wall_end - wall_start)/wall_strip_hight)*(mlx->tile[mlx->side]->width);
 		color = get_color(mlx,texter_y, texter_x);
 		mlx_put_pixel(mlx->img, r, wall_start, color);
 		wall_start++;
     }
-    draw_block(mlx->img, wall_start, map_h, r, 0xffffff00);
+    draw_block(mlx->img, wall_start, HEIGHT, r, 0xffffff00);
 }
 
 void draw_ray(t_mlx *mlx)
@@ -87,15 +87,15 @@ void draw_ray(t_mlx *mlx)
 
     r = -1;
     ra = mlx->angle - ((float)field_of_view / 2) * (PI/180);
-    angle_step = (field_of_view * (PI/180)) / map_w;
-    while(++r < map_w)
+    angle_step = (field_of_view * (PI/180)) / WIDTH;
+    while(++r < WIDTH)
     {
 		ra = bound_angle(ra);
 		calculate_horizontal(ra, mlx, &ray);
 		calculate_vertical(ra, mlx, &ray);
 		small_dist(&ray, mlx, &distray);
 		draw_line(mlx->minimap_img, (mlx->movex)*map_size, (mlx->movey)*map_size, (ray.rx)*map_size, (ray.ry)*map_size,0x00FF00FF);
-		draw_wall(mlx, &ray, r, distray, angle_step);
+		draw_wall(mlx, &ray, r, distray, angle_step, ra);
 		ra += angle_step;
     }
 }
@@ -120,7 +120,7 @@ void    drow_player(void *ptr)
             mlx_delete_image(mlx->mlx, mlx->txt);
             mlx->txt = 0;
         }
-        mlx->txt = mlx_put_string(mlx->mlx, ft_itoa(fps),map_w/2,0);
+        mlx->txt = mlx_put_string(mlx->mlx, ft_itoa(fps),WIDTH/2,0);
         if (mlx->txt)
             ffps(mlx->mlx,mlx->txt);
 		drow_map(mlx);

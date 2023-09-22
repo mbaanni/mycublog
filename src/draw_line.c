@@ -6,7 +6,7 @@
 /*   By: mbaanni <mbaanni@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 13:10:28 by mbaanni           #+#    #+#             */
-/*   Updated: 2023/09/14 13:26:11 by mbaanni          ###   ########.fr       */
+/*   Updated: 2023/09/16 09:44:46 by mbaanni          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy
     error = delta_y+delta_x;
     while (1)
     {
-        if (startx >= 0 && startx < map_w && starty >= 0 && starty < map_h)
+        if (startx >= 0 && startx < WIDTH && starty >= 0 && starty < HEIGHT)
     		mlx_put_pixel(image, startx, starty, color);
 		if (startx == endx && starty == endy)
 			break;

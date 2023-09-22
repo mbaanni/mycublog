@@ -9,10 +9,11 @@
 #include <math.h>
 
 #define PI M_PI
-#define map_w 1920
-#define map_h 1080
+#define WIDTH 1920
+#define HEIGHT 1080
 #define mini_map_w 1920
 #define mini_map_h 1080
+#define BLOCSIZE 64
 #define upscale_map 64
 #define map_size 0.2
 #define angle_speed 0.05
@@ -32,7 +33,50 @@ enum
     BOTTOM,
     RIGHT,
     LEFT,
+    DOR
 };
+
+typedef struct  s_dirs
+{
+	char	*key;
+	char	*path;
+	struct s_dirs		*next;
+} 	t_dirs;
+
+typedef struct	s_mapInfo
+{
+	t_dirs			*directions;
+	int				dirNbs;
+	char			**map;
+	int				colors[3];
+	int				player_x;
+	int				player_y;
+	int				max_x;
+	int				max_y;
+	float			pa;
+	mlx_t   *init;
+    mlx_image_t   *img;
+
+}	t_mapInfo;
+
+/*********MAP PARSING*************/
+
+int				mapParsing(char *str);
+int				checkPath(char *str);
+int				isDirection(char *str);
+int				checkElements(char	*str);
+int				checkDirs(char *str);
+t_mapInfo*		getType(void);
+int				printError(int	i);
+void  		    ft_move(void *arg);
+void    		 print_map();
+/*********************************/
+
+/*********LINKED LIST UTILS*******************/
+
+t_dirs		*lstnew(char	 *key, char *path);
+void		lstadd_back(t_dirs **lst, t_dirs *newnode);
+
 
 typedef struct t_ray {
     float   hx;
@@ -50,7 +94,7 @@ typedef struct t_ray {
 typedef struct t_mlx {
     mlx_image_t *img;
     mlx_image_t *minimap_img;
-    mlx_texture_t* tile[5];
+    mlx_texture_t* tile[6];
     t_ray   *ray;
     mlx_t*  mlx;
     mlx_image_t *txt;
@@ -75,6 +119,7 @@ void    drow_player(void *mlx);
 void    event_win(void *param);
 char    **open_map(char *link);
 int     creat_block(t_mlx *mlx);
+void    dor_click(mlx_key_data_t key, void *ptr);
 int     drow_map(t_mlx *mlx);
 void    draw_line(mlx_image_t *image, int startx, int starty, int endx, int endy, int color);
 void    calculate_vertical(float ra, t_mlx *mlx, t_ray *ray);
